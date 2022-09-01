@@ -94,12 +94,13 @@ function Board({ nrows = 3, ncols = 3, chanceLightStartsOn = 0.5 }) {
     <table>
       <tbody>
       {board.map((row, y) => 
-        (<tr>
+        (<tr key={y}>
           {row.map((cell, x) => 
             (<Cell
             isLit={cell} 
             flipCellsAroundMe={flipCellsAround} 
             coords={`${y}-${x}`}
+            key={Number(`${y}${x}`)}
           />))}
         </tr>))}
         </tbody>
