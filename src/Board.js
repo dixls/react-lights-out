@@ -27,23 +27,25 @@ import "./Board.css";
  *
  **/
 
-function Board({ nrows=3, ncols=3, chanceLightStartsOn=0.5 }) {
+function Board({ nrows = 3, ncols = 3, chanceLightStartsOn = 0.5 }) {
   const [board, setBoard] = useState(createBoard());
 
   /** create a board nrows high/ncols wide, each cell randomly lit or unlit */
   function createBoard() {
-    let initialBoard =  Array.from(nrows.keys(), cols => Array.from(ncols.keys(), cell => Math.random() > chanceLightStartsOn));
+    let initialBoard = Array.from({length: nrows}, cols => Array.from({length: ncols}, cell => {
+      return Math.random() < chanceLightStartsOn;
+    }));
     // create array-of-arrays of true/false values
 
     return initialBoard;
   }
 
   function hasWon() {
-    // TODO: check the board in state to determine whether the player has won.
-    winCond = True;
-    for(let row of board) {
-      for(let cell of row) {
-        if (cell) winCond = False;
+    // check the board in state to determine whether the player has won.
+    let winCond = true;
+    for (let row of board) {
+      for (let cell of row) {
+        if (cell) winCond = false;
       }
     }
     return winCond;
@@ -53,6 +55,13 @@ function Board({ nrows=3, ncols=3, chanceLightStartsOn=0.5 }) {
     setBoard(oldBoard => {
       const [y, x] = coord.split("-").map(Number);
 
+      // Make a (deep) copy of the oldBoard
+      const boardCopy = oldBoard.map(row => row.map(cell => cell))
+
+      const cellsToFlip = [
+        [y, x], [y - 1, x], [y + 1, x], [y, x - 1], [y, x + 1]
+      ];
+
       const flipCell = (y, x, boardCopy) => {
         // if this coord is actually on board, flip it
 
@@ -60,30 +69,43 @@ function Board({ nrows=3, ncols=3, chanceLightStartsOn=0.5 }) {
           boardCopy[y][x] = !boardCopy[y][x];
         }
       };
+      
+      // in the copy, flip this cell and the cells around it
+      cellsToFlip.forEach(([y,x]) => {
+        flipCell(y,x,boardCopy);
+      })
 
-      // TODO: Make a (deep) copy of the oldBoard
+      // return the copy
+      return boardCopy
 
-      // TODO: in the copy, flip this cell and the cells around it
-
-      // TODO: return the copy
     });
   }
 
   // if the game is won, just show a winning msg & render nothing else
-  if (hasWon()){
+  if (hasWon()) {
     return (
       <h2>You Won!</h2>
     )
   }
-  // TODO
+  
 
   // make table board
   return (
-    <div>
-      { board.map(row => (row.map(cell => <cell isLit={cell} />))) }
-    </div>
+    <table>
+      <tbody>
+      {board.map((row, y) => 
+        (<tr>
+          {row.map((cell, x) => 
+            (<Cell
+            isLit={cell} 
+            flipCellsAroundMe={flipCellsAround} 
+            coords={`${y}-${x}`}
+          />))}
+        </tr>))}
+        </tbody>
+    </table>
   )
-  // TODO
+
 }
 
 export default Board;
